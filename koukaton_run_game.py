@@ -8,7 +8,7 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 400
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("チャリ走")
+pygame.display.set_caption("走れ！こうかとん！")
 
 # 色定義
 WHITE = (255, 255, 255)
@@ -24,8 +24,8 @@ FPS = 60
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((50, 30))
-        self.image.fill(BLUE)
+        # 画像を読み込み、サイズを調整
+        self.image = pygame.transform.flip(pygame.transform.rotozoom(pygame.image.load("fig/5.png"), 0, 1), True, False)
         self.rect = self.image.get_rect()
         self.rect.center = (100, SCREEN_HEIGHT // 2)
         self.velocity = 0
