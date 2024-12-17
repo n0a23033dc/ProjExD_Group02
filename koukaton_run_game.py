@@ -53,6 +53,7 @@ class Player(pygame.sprite.Sprite):
             self.velocity = self.jump_strength
             self.jump_count -= 1
 
+
 # 障害物クラス
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
@@ -69,6 +70,32 @@ class Obstacle(pygame.sprite.Sprite):
         if self.rect.right < 0:  # 画面外に出たら削除
             self.kill()
 
+
+# ゲームオーバー画面表示関数
+def gameover(screen, score):
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.fill((0, 0, 0))
+    overlay.set_alpha(150)  # 半透明度を設定
+    screen.blit(overlay, (0, 0))
+
+    # フォントとテキスト設定
+    font = pygame.font.Font(None, 80)
+    text1 = font.render("Game Over", True, (255, 255, 255))
+    text2 = font.render(f"Score: {score}", True, (255, 255, 255))
+
+    # テキストの配置
+    text_rect1 = text1.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+    text_rect2 = text2.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 80))
+
+    # 画面にテキストを描画
+    screen.blit(text1, text_rect1)
+    screen.blit(text2, text_rect2)
+
+    pygame.display.update()
+    pygame.time.wait(5000)  # 5秒間待機
+
+
+
 # スプライトグループ
 player = Player()
 player_group = pygame.sprite.Group()
@@ -80,6 +107,7 @@ obstacle_group = pygame.sprite.Group()
 running = True
 score = 0
 spawn_timer = 0
+score_timer = 0
 
 while running:
     for event in pygame.event.get():
@@ -109,12 +137,16 @@ while running:
     # 衝突判定
     if pygame.sprite.spritecollide(player, obstacle_group, False):
         print(f"ゲームオーバー! スコア: {score}")
+        gameover(screen, score)
         running = False
 
     # スコア更新
-    score += 1
+    score_timer += 1
+    if score_timer >= 10:  # 10フレームごとにスコアを更新
+        score += 1
+        score_timer = 0
     font = pygame.font.SysFont(None, 36)
-    score_text = font.render(f"Score: {score}", True, BLACK)
+    score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
 
     # スプライト描画
