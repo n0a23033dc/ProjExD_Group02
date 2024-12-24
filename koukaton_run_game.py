@@ -153,14 +153,14 @@ class Item1(pygame.sprite.Sprite):
 # ゲームオーバー画面表示関数
 def gameover(screen, score):
     overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-    overlay.fill((0, 0, 0))
+    overlay.fill((BLACK))
     overlay.set_alpha(150)  # 半透明度を設定
     screen.blit(overlay, (0, 0))
 
     # フォントとテキスト設定
     font = pygame.font.Font(None, 80)
-    text1 = font.render("Game Over", True, (255, 255, 255))
-    text2 = font.render(f"Score: {score}", True, (255, 255, 255))
+    text1 = font.render("Game Over", True, (WHITE))
+    text2 = font.render(f"Score: {score}", True, (WHITE))
 
     # テキストの配置
     text_rect1 = text1.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
@@ -442,7 +442,7 @@ while running:
         score += 1
         score_timer = 0
     font = pygame.font.SysFont(None, 36)
-    score_text = font.render(f"Score: {score}", True, BLACK)
+    score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10)) #スコア表示
 
     # スプライト描画
