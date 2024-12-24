@@ -118,6 +118,8 @@ class Obstacle(pygame.sprite.Sprite): #pygameのSpriteクラスを継承
             self.velocity = self.jump_strength
             self.jump_count -= 1
 
+# 障害物クラス
+class Obstacle(pygame.sprite.Sprite):
     def activate_boost(self, duration=10):
         self.default_jump_count = 6  # ジャンプ回数を6回に増加
         self.jump_count = 6  # 即時反映
@@ -156,6 +158,29 @@ class Item1(pygame.sprite.Sprite):
         self.rect.x -= 5
         if self.rect.right < 0:
             self.kill()
+
+# ゲームオーバー画面表示関数
+def gameover(screen, score):
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.fill((0, 0, 0))
+    overlay.set_alpha(150)  # 半透明度を設定
+    screen.blit(overlay, (0, 0))
+
+    # フォントとテキスト設定
+    font = pygame.font.Font(None, 80)
+    text1 = font.render("Game Over", True, (255, 255, 255))
+    text2 = font.render(f"Score: {score}", True, (255, 255, 255))
+
+    # テキストの配置
+    text_rect1 = text1.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+    text_rect2 = text2.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 80))
+
+    # 画面にテキストを描画
+    screen.blit(text1, text_rect1)
+    screen.blit(text2, text_rect2)
+
+    pygame.display.update()
+    pygame.time.wait(5000)  # 5秒間待機
 
 # アイテム2クラス（飛行モード用）
 class Item2(pygame.sprite.Sprite):
@@ -308,9 +333,9 @@ show_start_screen(screen)
 running = True
 score = 0
 spawn_timer = 0
+score_timer = 0
 last_item1_score = 0
 last_item2_score = 0
-
 createStars()
 
 while running:
@@ -387,9 +412,10 @@ while running:
     item2_group.update()
 
     # 衝突判定
-    if pygame.sprite.spritecollide(player, obstacle_group, False, pygame.sprite.collide_mask):
-        print(f"ゲームオーバー! スコア: {score}") #スコア表示
-        running = False #ループ終了
+    if pygame.sprite.spritecollide(player, obstacle_group, False):
+        print(f"ゲームオーバー! スコア: {score}")
+        gameover(screen, score)
+        running = False
 
     # アイテム1取得判定
     if pygame.sprite.spritecollide(player, item1_group, True):
@@ -402,7 +428,10 @@ while running:
         print("アイテム2取得！10秒間飛行モード有効！")
 
     # スコア更新
-    score += 1
+    score_timer += 1
+    if score_timer >= 10:  # 10フレームごとにスコアを更新
+        score += 1
+        score_timer = 0
     font = pygame.font.SysFont(None, 36)
     score_text = font.render(f"Score: {score}", True, BLACK)
     screen.blit(score_text, (10, 10)) #スコア表示
