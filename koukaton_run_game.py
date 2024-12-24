@@ -3,8 +3,14 @@ import random
 import time
 import os
 
-#初期設定
+# 初期設定
 pygame.init()
+pygame.mixer.init()  # ミキサーの初期化
+
+# 音楽のロードと再生
+pygame.mixer.music.load("fig/c00003_kamatamago_heaven-and-hell.mp3")
+pygame.mixer.music.set_volume(0.5)  # 音量を設定（0.0から1.0の範囲）
+pygame.mixer.music.play(-1)  # ループ再生
 
 #画面サイズ
 SCREEN_WIDTH = 800
@@ -29,43 +35,11 @@ PURPLE = (128, 0, 128)
 clock = pygame.time.Clock()
 FPS = 60
 #ビル画像の読み込み
-building_image = pygame.image.load("ex5/fig/3254オフィスビル.png").convert_alpha() #画像を読み込む
+building_image = pygame.image.load("fig/3254オフィスビル.png").convert_alpha() #画像を読み込む
 building_image = pygame.transform.scale(building_image, (500, 1000))  #サイズを調整
 
-#プレイヤークラス
-class Player(pygame.sprite.Sprite): #pygameのSpriteクラスを継承
-    def __init__(self):
-        super().__init__() #親クラスの初期化
-        self.image = pygame.Surface((50, 30)) #プレイヤーのサイズ
-        self.image.fill(BLUE) #プレイヤーの色
-        self.rect = self.image.get_rect() #位置とサイズ情報
-        self.rect.center = (100, SCREEN_HEIGHT // 2) #初期位置を画面左中央に設定
-        self.velocity = 0 #縦方向の速度
-        self.gravity = 0.5 #重力
-        self.jump_strength = -10 #ジャンプの強さ
-        self.jump_count = 2  #2段ジャンプを許可
-
-    def update(self):
-        self.velocity += self.gravity #重力で速度を増加
-        self.rect.y += self.velocity #速度分だけY座標を更新
-# 星と惑星のリスト
-stars = []
-planets = []
-
-# 惑星のサイズ定義
-planet_sizes = {
-    'sun': 50,
-    'saturn': 40,
-    'earth': 30,
-    'comet': 20,
-    'venus': 25,
-    'jupiter': 45,
-    'uranus': 35,
-    'neptune': 35
-}
-
 # プレイヤークラス1
-class Player1(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         # 画像を読み込み、サイズを調整
@@ -112,14 +86,6 @@ class Player1(pygame.sprite.Sprite):
             self.velocity = self.jump_strength #ジャンプの強さを適用
             self.jump_count -= 1 #ジャンプ回数を１回減少
 
-#障害物クラス
-class Obstacle(pygame.sprite.Sprite): #pygameのSpriteクラスを継承
-        if self.jump_count > 0:
-            self.velocity = self.jump_strength
-            self.jump_count -= 1
-
-# 障害物クラス
-class Obstacle(pygame.sprite.Sprite):
     def activate_boost(self, duration=10):
         self.default_jump_count = 6  # ジャンプ回数を6回に増加
         self.jump_count = 6  # 即時反映
@@ -128,8 +94,24 @@ class Obstacle(pygame.sprite.Sprite):
     def activate_flight(self, duration=10):
         self.flight_end_time = time.time() + duration  # 飛行モードの終了時間
 
-# 障害物クラス1
-class Obstacle1(pygame.sprite.Sprite):
+# 星と惑星のリスト
+stars = []
+planets = []
+
+# 惑星のサイズ定義
+planet_sizes = {
+    'sun': 50,
+    'saturn': 40,
+    'earth': 30,
+    'comet': 20,
+    'venus': 25,
+    'jupiter': 45,
+    'uranus': 35,
+    'neptune': 35
+}
+
+# 障害物クラス
+class Obstacle(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__() #親クラスの初期化
         self.image = pygame.transform.scale(building_image, (width, height)) #ビル画像のサイズ調整
@@ -139,16 +121,25 @@ class Obstacle1(pygame.sprite.Sprite):
         self.speed = 5 #障害物の移動速度
 
     def update(self):
-        self.rect.x -= self.speed #左方向に移動
-        if self.rect.right < 0:  # 画面外に出たら削除
-            self.kill() #障害物を削除
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
+            self.kill()
+
+    def activate_boost(self, duration=10):
+        self.default_jump_count = 6  # ジャンプ回数を6回に増加
+        self.jump_count = 6  # 即時反映
+        self.boost_end_time = time.time() + duration  # 終了時間を設定
+
+    def activate_flight(self, duration=10):
+        self.flight_end_time = time.time() + duration  # 飛行モードの終了時間
+
 
 
 # アイテム1クラス
 class Item1(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("ex5/fig/item.png")
+        self.image = pygame.image.load("fig/item.png")
         self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -186,7 +177,7 @@ def gameover(screen, score):
 class Item2(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.image.load("ex5/fig/item2.png")
+        self.image = pygame.image.load("fig/item2.png")
         self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -287,7 +278,16 @@ font_path = "NotoSansJP-VariableFont_wght.ttf"
 
 # スタート画面を表示する関数
 def show_start_screen(screen):
-    screen.fill(WHITE)
+    # ゲームの最初の画面を表示
+    showGround()
+    
+    # 半透明のオーバーレイを作成
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    overlay.fill(BLACK)
+    overlay.set_alpha(150)  # 半透明度を設定
+    screen.blit(overlay, (0, 0))
+
+    # フォントの設定
     if not os.path.exists(font_path):
         title_font = pygame.font.Font(None, 74)
         instruction_font = pygame.font.Font(None, 50)
@@ -295,27 +295,36 @@ def show_start_screen(screen):
         title_font = pygame.font.Font(font_path, 74)
         instruction_font = pygame.font.Font(font_path, 50)
     
-    title_text = title_font.render("走れ！こうかとん", True, BLACK)
-    instruction_text = instruction_font.render("エンターキーを押してね", True, BLACK)
+    # タイトルと指示テキストの設定
+    title_text = title_font.render("走れ！こうかとん", True, WHITE)
+    instruction_text = instruction_font.render("エンターキーを押してね", True, WHITE)
     
+    # テキストの位置を設定
     title_rect = title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
     instruction_rect = instruction_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50))
     
+    # テキストを画面に描画
     screen.blit(title_text, title_rect)
     screen.blit(instruction_text, instruction_rect)
 
+    # こうかとんの画像を読み込み、左右反転
     crying_kk_img = pygame.transform.rotozoom(pygame.image.load("fig/5.png"), 0, 0.9)
-    crying_kk_img_flipped = pygame.transform.flip(crying_kk_img, True, False)  # 左右反転
+    crying_kk_img_flipped = pygame.transform.flip(crying_kk_img, True, False)
 
+    # こうかとんの画像の位置を設定
     left_crying_kk_rct = crying_kk_img_flipped.get_rect()
     right_crying_kk_rct = crying_kk_img.get_rect()
     left_crying_kk_rct.center = (title_rect.left - 50, title_rect.centery)
     right_crying_kk_rct.center = (title_rect.right + 50, title_rect.centery)
+    
+    # こうかとんの画像を画面に描画
     screen.blit(crying_kk_img_flipped, left_crying_kk_rct)
     screen.blit(crying_kk_img, right_crying_kk_rct)
 
+    # 画面を更新
     pygame.display.flip()
 
+    # エンターキーが押されるまで待機
     waiting = True
     while waiting:
         for event in pygame.event.get():
@@ -374,7 +383,7 @@ while running:
     # プレイヤーが障害物の上に乗れるようにする
     for obstacle in obstacle_group:
         if player.rect.colliderect(obstacle.rect): #衝突判定
-            if player.rect.bottom <= obstacle.rect.top + 10:  #上側からの接触
+            if player.rect.bottom <= obstacle.rect.top + 20:  #上側からの接触
                 player.rect.bottom = obstacle.rect.top #プレイヤーを障害物の上に固定
                 player.velocity = 0 #縦方向の速度をリセット
                 player.jump_count = 2  # 障害物の上でジャンプ回数をリセット
@@ -395,13 +404,13 @@ while running:
         spawn_timer = 0
 
     # アイテム1生成（スコアが1000の時だけ）
-    if score % 1500 == 0 and last_item1_score < score:
+    if score % 500 == 0 and last_item1_score < score:
         item = Item1(SCREEN_WIDTH, 200)
         item1_group.add(item)
         last_item1_score = score
 
     # アイテム2生成（スコアが3000の時だけ）
-    if score % 3500 == 0 and last_item2_score < score:
+    if score % 700 == 0 and last_item2_score < score:
         item = Item2(SCREEN_WIDTH, 200)
         item2_group.add(item)
         last_item2_score = score
@@ -429,7 +438,7 @@ while running:
 
     # スコア更新
     score_timer += 1
-    if score_timer >= 10:  # 10フレームごとにスコアを更新
+    if score_timer >= 0.1:  # 10フレームごとにスコアを更新
         score += 1
         score_timer = 0
     font = pygame.font.SysFont(None, 36)
