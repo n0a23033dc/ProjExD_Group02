@@ -356,20 +356,20 @@ while running:
                 player.jump()
 
     # スコアに応じて背景を切り替える
-    if score < 1000:
+    if score < 500:
         # 地上を表示
         showGround()
         player.gravity = 0.5
-    elif score < 2000:
+    elif score < 1000:
         # 大気圏を表示
         showAtmosphere()
         player.gravity = 0.4
-    elif score < 3000:
+    elif score < 1500:
         # 星のみを表示
         screen.fill(BLACK)
         showStars()
         player.gravity = 0.3
-    elif 3000<=score:   
+    elif 1500<=score:   
         # 星と惑星を表示
         screen.fill(BLACK)
         showStars()
@@ -403,14 +403,14 @@ while running:
         obstacle_group.add(obstacle)
         spawn_timer = 0
 
-    # アイテム1生成（スコアが1000の時だけ）
-    if score % 500 == 0 and last_item1_score < score:
+    # アイテム1生成（スコアが700の時だけ）
+    if score % 700 == 0 and last_item1_score < score:
         item = Item1(SCREEN_WIDTH, 200)
         item1_group.add(item)
         last_item1_score = score
 
-    # アイテム2生成（スコアが3000の時だけ）
-    if score % 700 == 0 and last_item2_score < score:
+    # アイテム2生成（スコアが1000の時だけ）
+    if score % 1000 == 0 and last_item2_score < score:
         item = Item2(SCREEN_WIDTH, 200)
         item2_group.add(item)
         last_item2_score = score
